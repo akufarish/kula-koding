@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger("tool_id");
             $table->string("nama_project");
             $table->text("deskripsi");
+            $table->text("tools");
             $table->string("github")->nullable();
             $table->timestamps();
 

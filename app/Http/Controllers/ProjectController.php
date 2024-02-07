@@ -20,7 +20,11 @@ class ProjectController extends Controller
 
         $project = Project::where("user_id", $user->id)->get()->load("Image");
 
-        return response()->json($project, 200);
+        return response()->json([
+            'data' => $projects,
+            'status' => 'success',
+            'message' => 'Data berhasil diambil',
+        ], 200);
     }
 
     function Show($id) {
@@ -48,7 +52,8 @@ class ProjectController extends Controller
             return response()->json($validation->errors(), 400);
         }
 
-        $user = Auth::user();
+            $payload = $request->validated();
+            $payload["user_id"] = $user->id;
 
         $payload = [
             "nama_project" => $request->nama_project,
@@ -57,7 +62,12 @@ class ProjectController extends Controller
             "tool_id" => $request->tool
         ];
 
-        $project = Project::create($payload);
+            foreach ($request->file("image") as $uploadedImage) {
+                $extension = $uploadedImage->extension();
+                $dir = "storage/project/";
+                $name = Str::random(32) . "." . $extension;
+                $foto = $dir . $name;
+                $uploadedImage->move($dir, $name);
 
         $image = $request->file("image");
 
@@ -73,9 +83,16 @@ class ProjectController extends Controller
             ]);
 
 
-        return response()->json([
-            "message" => "Project berhasil diupload!"
-        ], 201);
+            return response()->json([
+                "message" => "Project berhasil diupload!",
+                "images" => $images,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => "Terjadi kesalahan saat mengunggah proyek.",
+                "error" => $e->getMessage(),
+            ], 500);
+        }
     }
 
     function Update($id, ProjectRequest $request) {
@@ -104,7 +121,8 @@ class ProjectController extends Controller
         }
     }
 
-    function Destroy($id) {
+    function Destroy($id)
+    {
         $user = Auth::user();
         $project = Project::firstWhere("id", $id);
 
@@ -112,7 +130,7 @@ class ProjectController extends Controller
             $komentar = Komentar::where("project_id", $id);
             $komentar->delete();
             $project->delete();
-    
+
             return response()->json([
                 "message" => "Data berhasil dihapus"
             ], 200);

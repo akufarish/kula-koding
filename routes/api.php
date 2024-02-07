@@ -39,6 +39,7 @@ Route::prefix("/v1")->group(function () {
         Route::post("/project/komentar/{id}", [KomentarController::class, "Store"]);
         Route::delete("/project/komentar/{id}/{komentar:id}", [KomentarController::class, "destroy"]);
         Route::put("/project/{id}", [ProjectController::class, "Update"]);
+        Route::post("/user", [AuthController::class, "editProfile"]);
 
         Route::prefix("/admin")->group(function (){
             Route::resource("project", AdminProjectController::class);
